@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encryption Tool</title>
+    <title>Encryption and Decryption Tool</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -60,15 +60,20 @@
 </head>
 <body>
     <div class="container">
-        <h1>Encryption Tool</h1>
-        <label for="inputText">Enter a string to encrypt:</label>
-        <input type="text" id="inputText">
+        <h1>Encryption and Decryption Tool</h1>
+        <label for="inputTextEncrypt">Enter a string to encrypt:</label>
+        <input type="text" id="inputTextEncrypt">
         <button onclick="encrypt()">Encrypt</button>
         <p>Encrypted text: <span id="encryptedText"></span></p>
+
+        <label for="inputTextDecrypt">Enter a string to decrypt:</label>
+        <input type="text" id="inputTextDecrypt">
+        <button onclick="decrypt()">Decrypt</button>
+        <p>Decrypted text: <span id="decryptedText"></span></p>
     </div>
     <script>
         function encrypt() {
-            const text = document.getElementById('inputText').value;
+            const text = document.getElementById('inputTextEncrypt').value;
             const shift = 4;
             let result = '';
 
@@ -92,6 +97,33 @@
             }
 
             document.getElementById('encryptedText').innerText = result;
+        }
+
+        function decrypt() {
+            const text = document.getElementById('inputTextDecrypt').value;
+            const shift = 4;
+            let result = '';
+
+            for (let i = 0; i < text.length; i++) {
+                let ch = text.charAt(i);
+                if (isLetter(ch)) {
+                    let shifted = String.fromCharCode(ch.charCodeAt(0) - shift);
+                    if ((isUpperCase(ch) && shifted < 'A') || (isLowerCase(ch) && shifted < 'a')) {
+                        shifted = String.fromCharCode(shifted.charCodeAt(0) + 26);
+                    }
+                    result += shifted;
+                } else if (isDigit(ch)) {
+                    let shifted = String.fromCharCode(ch.charCodeAt(0) - shift);
+                    if (shifted < '0') {
+                        shifted = String.fromCharCode(shifted.charCodeAt(0) + 10);
+                    }
+                    result += shifted;
+                } else {
+                    result += ch;
+                }
+            }
+
+            document.getElementById('decryptedText').innerText = result;
         }
 
         function isLetter(ch) {
