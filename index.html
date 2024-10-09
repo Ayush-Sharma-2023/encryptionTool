@@ -85,25 +85,32 @@
             const text = document.getElementById('inputTextEncrypt').value;
             const shift = 4;
             let result = '';
+            const lines = text.split(/(<br\s*\/?>|<sp\s*\/?>)/i); // Split by <br> and <sp> tags
 
-            for (let i = 0; i < text.length; i++) {
-                let ch = text.charAt(i);
-                if (isLetter(ch)) {
-                    let shifted = String.fromCharCode(ch.charCodeAt(0) + shift);
-                    if ((isUpperCase(ch) && shifted > 'Z') || (isLowerCase(ch) && shifted > 'z')) {
-                        shifted = String.fromCharCode(shifted.charCodeAt(0) - 26);
-                    }
-                    result += shifted;
-                } else if (isDigit(ch)) {
-                    let shifted = String.fromCharCode(ch.charCodeAt(0) + shift);
-                    if (shifted > '9') {
-                        shifted = String.fromCharCode(shifted.charCodeAt(0) - 10);
-                    }
-                    result += shifted;
-                } else if (ch === '\n') {
-                    result += '<br>'; // Maintain line break as <br>
+            for (let part of lines) {
+                if (part.match(/<br\s*\/?>/i)) {
+                    result += part; // Keep <br> tags as is
+                } else if (part.match(/<sp\s*\/?>/i)) {
+                    result += ' '; // Replace <sp> with a space
                 } else {
-                    result += ch;
+                    for (let i = 0; i < part.length; i++) {
+                        let ch = part.charAt(i);
+                        if (isLetter(ch)) {
+                            let shifted = String.fromCharCode(ch.charCodeAt(0) + shift);
+                            if ((isUpperCase(ch) && shifted > 'Z') || (isLowerCase(ch) && shifted > 'z')) {
+                                shifted = String.fromCharCode(shifted.charCodeAt(0) - 26);
+                            }
+                            result += shifted;
+                        } else if (isDigit(ch)) {
+                            let shifted = String.fromCharCode(ch.charCodeAt(0) + shift);
+                            if (shifted > '9') {
+                                shifted = String.fromCharCode(shifted.charCodeAt(0) - 10);
+                            }
+                            result += shifted;
+                        } else {
+                            result += ch; // Preserve other characters
+                        }
+                    }
                 }
             }
 
@@ -117,7 +124,13 @@
 
             for (let i = 0; i < text.length; i++) {
                 let ch = text.charAt(i);
-                if (isLetter(ch)) {
+                if (ch === '<' && text.slice(i).startsWith('<sp')) {
+                    result += ' '; // Replace <sp> with a space
+                    while (ch !== '>') {
+                        i++; // Skip to the end of the tag
+                        ch = text.charAt(i);
+                    }
+                } else if (isLetter(ch)) {
                     let shifted = String.fromCharCode(ch.charCodeAt(0) - shift);
                     if ((isUpperCase(ch) && shifted < 'A') || (isLowerCase(ch) && shifted < 'a')) {
                         shifted = String.fromCharCode(shifted.charCodeAt(0) + 26);
@@ -130,7 +143,7 @@
                     }
                     result += shifted;
                 } else if (ch === '<') {
-                    // Skip this character to avoid decrypting <br>
+                    // Skip <br> tags to convert them back to line breaks
                     while (ch !== '>') {
                         i++;
                         ch = text.charAt(i);
