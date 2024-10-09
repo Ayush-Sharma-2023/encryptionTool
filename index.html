@@ -29,13 +29,14 @@
             margin-top: 10px;
         }
 
-        input[type="text"] {
+        textarea {
             width: 100%;
             padding: 10px;
             margin-top: 5px;
             margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            resize: vertical;
         }
 
         button {
@@ -46,6 +47,7 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin-top: 5px;
         }
 
         button:hover {
@@ -56,19 +58,26 @@
             margin-top: 20px;
             font-size: 18px;
         }
+
+        .copy-button {
+            margin-top: 10px;
+            background-color: #28a745;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Encryption and Decryption Tool</h1>
         <label for="inputTextEncrypt">Enter a string to encrypt:</label>
-        <input type="text" id="inputTextEncrypt">
+        <textarea id="inputTextEncrypt" rows="4"></textarea>
         <button onclick="encrypt()">Encrypt</button>
+        <button class="copy-button" onclick="copyToClipboard('encryptedText')">Copy Encrypted Text</button>
         <p>Encrypted text: <span id="encryptedText"></span></p>
 
         <label for="inputTextDecrypt">Enter a string to decrypt:</label>
-        <input type="text" id="inputTextDecrypt">
+        <textarea id="inputTextDecrypt" rows="4"></textarea>
         <button onclick="decrypt()">Decrypt</button>
+        <button class="copy-button" onclick="copyToClipboard('decryptedText')">Copy Decrypted Text</button>
         <p>Decrypted text: <span id="decryptedText"></span></p>
     </div>
     <script>
@@ -91,12 +100,14 @@
                         shifted = String.fromCharCode(shifted.charCodeAt(0) - 10);
                     }
                     result += shifted;
+                } else if (ch === '\n') {
+                    result += '<br>'; // Maintain line break as <br>
                 } else {
                     result += ch;
                 }
             }
 
-            document.getElementById('encryptedText').innerText = result;
+            document.getElementById('encryptedText').innerHTML = result;
         }
 
         function decrypt() {
@@ -118,12 +129,26 @@
                         shifted = String.fromCharCode(shifted.charCodeAt(0) + 10);
                     }
                     result += shifted;
+                } else if (ch === '<') {
+                    // Skip this character to avoid decrypting <br>
+                    while (ch !== '>') {
+                        i++;
+                        ch = text.charAt(i);
+                    }
+                    result += '\n'; // Convert <br> back to line break
                 } else {
                     result += ch;
                 }
             }
 
-            document.getElementById('decryptedText').innerText = result;
+            document.getElementById('decryptedText').innerHTML = result.replace(/\n/g, '<br>');
+        }
+
+        function copyToClipboard(outputId) {
+            const outputText = document.getElementById(outputId).innerText;
+            navigator.clipboard.writeText(outputText).catch(err => {
+                console.error('Could not copy text: ', err);
+            });
         }
 
         function isLetter(ch) {
