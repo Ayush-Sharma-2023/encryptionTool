@@ -3,181 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encryption and Decryption Tool</title>
+    <title>Text Encryptor</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
+            margin: 20px;
             text-align: center;
+            background-color: #f4f4f4;
         }
-
-        label {
-            display: block;
-            margin-top: 10px;
-        }
-
         textarea {
-            width: 100%;
+            width: 80%;
             padding: 10px;
-            margin-top: 5px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            resize: vertical;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 5px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        p {
-            margin-top: 20px;
-            font-size: 18px;
-        }
-
-        .copy-button {
             margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
             background-color: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .output-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .output-box {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 80%;
+            word-wrap: break-word;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Encryption and Decryption Tool</h1>
-        <label for="inputTextEncrypt">Enter a string to encrypt:</label>
-        <textarea id="inputTextEncrypt" rows="4"></textarea>
-        <button onclick="encrypt()">Encrypt</button>
-        <button class="copy-button" onclick="copyToClipboard('encryptedText')">Copy Encrypted Text</button>
-        <p>Encrypted text: <span id="encryptedText"></span></p>
-
-        <label for="inputTextDecrypt">Enter a string to decrypt:</label>
-        <textarea id="inputTextDecrypt" rows="4"></textarea>
-        <button onclick="decrypt()">Decrypt</button>
-        <button class="copy-button" onclick="copyToClipboard('decryptedText')">Copy Decrypted Text</button>
-        <p>Decrypted text: <span id="decryptedText"></span></p>
+    <h2>Paragraph Encryptor</h2>
+    <textarea id="inputText" rows="6" placeholder="Enter your paragraph..."></textarea>
+    <br>
+    <button onclick="encryptText()">Encrypt</button>
+    <h3>Encrypted Message:</h3>
+    <div class="output-container">
+        <p id="outputText" class="output-box"></p>
+        <button onclick="copyText('outputText')">Copy</button>
     </div>
+
+    <h2>Paragraph Decryptor</h2>
+    <textarea id="encryptedText" rows="6" placeholder="Enter encrypted message..."></textarea>
+    <br>
+    <button onclick="decryptText()">Decrypt</button>
+    <h3>Decrypted Message:</h3>
+    <div class="output-container">
+        <p id="decryptedOutput" class="output-box"></p>
+        <button onclick="copyText('decryptedOutput')">Copy</button>
+    </div>
+
     <script>
-        function encrypt() {
-            const text = document.getElementById('inputTextEncrypt').value;
-            const shift = 4;
-            let result = '';
-            const lines = text.split(/(<br\s*\/?>|<sp\s*\/?>)/i); // Split by <br> and <sp> tags
+        function encryptText() {
+            let input = document.getElementById("inputText").value;
+            let encryptedMessage = "";
 
-            for (let part of lines) {
-                if (part.match(/<br\s*\/?>/i)) {
-                    result += part; // Keep <br> tags as is
-                } else if (part.match(/<sp\s*\/?>/i)) {
-                    result += ' '; // Replace <sp> with a space
+            for (let char of input) {
+                let charCode = char.charCodeAt(0);
+                if (char === ' ') {
+                    encryptedMessage += "00";
+                } else if (char === '\n') {
+                    encryptedMessage += "99";
                 } else {
-                    for (let i = 0; i < part.length; i++) {
-                        let ch = part.charAt(i);
-                        if (isLetter(ch)) {
-                            let shifted = String.fromCharCode(ch.charCodeAt(0) + shift);
-                            if ((isUpperCase(ch) && shifted > 'Z') || (isLowerCase(ch) && shifted > 'z')) {
-                                shifted = String.fromCharCode(shifted.charCodeAt(0) - 26);
-                            }
-                            result += shifted;
-                        } else if (isDigit(ch)) {
-                            let shifted = String.fromCharCode(ch.charCodeAt(0) + shift);
-                            if (shifted > '9') {
-                                shifted = String.fromCharCode(shifted.charCodeAt(0) - 10);
-                            }
-                            result += shifted;
-                        } else {
-                            result += ch; // Preserve other characters
-                        }
+                    encryptedMessage += (charCode < 100 ? "0" : "") + charCode;
+                }
+            }
+            
+            document.getElementById("outputText").innerText = encryptedMessage;
+        }
+
+        function decryptText() {
+            let encryptedInput = document.getElementById("encryptedText").value;
+            let decryptedMessage = "";
+            let i = 0;
+            
+            while (i < encryptedInput.length) {
+                let code = encryptedInput.substring(i, i + 2);
+                if (code === "00") {
+                    decryptedMessage += " ";
+                    i += 2;
+                } else if (code === "99") {
+                    decryptedMessage += "\n";
+                    i += 2;
+                } else {
+                    let charCode = parseInt(encryptedInput.substring(i, i + 2));
+                    if (charCode >= 65 && charCode <= 90 || charCode >= 97 && charCode <= 122 || (charCode >= 33 && charCode <= 64)) {
+                        decryptedMessage += String.fromCharCode(charCode);
+                        i += 2;
+                    } else {
+                        charCode = parseInt(encryptedInput.substring(i, i + 3));
+                        decryptedMessage += String.fromCharCode(charCode);
+                        i += 3;
                     }
                 }
             }
-
-            document.getElementById('encryptedText').innerHTML = result;
+            
+            document.getElementById("decryptedOutput").innerText = decryptedMessage;
         }
 
-        function decrypt() {
-            const text = document.getElementById('inputTextDecrypt').value;
-            const shift = 4;
-            let result = '';
-
-            for (let i = 0; i < text.length; i++) {
-                let ch = text.charAt(i);
-                if (ch === '<' && text.slice(i).startsWith('<sp')) {
-                    result += ' '; // Replace <sp> with a space
-                    while (ch !== '>') {
-                        i++; // Skip to the end of the tag
-                        ch = text.charAt(i);
-                    }
-                } else if (isLetter(ch)) {
-                    let shifted = String.fromCharCode(ch.charCodeAt(0) - shift);
-                    if ((isUpperCase(ch) && shifted < 'A') || (isLowerCase(ch) && shifted < 'a')) {
-                        shifted = String.fromCharCode(shifted.charCodeAt(0) + 26);
-                    }
-                    result += shifted;
-                } else if (isDigit(ch)) {
-                    let shifted = String.fromCharCode(ch.charCodeAt(0) - shift);
-                    if (shifted < '0') {
-                        shifted = String.fromCharCode(shifted.charCodeAt(0) + 10);
-                    }
-                    result += shifted;
-                } else if (ch === '<') {
-                    // Skip <br> tags to convert them back to line breaks
-                    while (ch !== '>') {
-                        i++;
-                        ch = text.charAt(i);
-                    }
-                    result += '\n'; // Convert <br> back to line break
-                } else {
-                    result += ch;
-                }
-            }
-
-            document.getElementById('decryptedText').innerHTML = result.replace(/\n/g, '<br>');
-        }
-
-        function copyToClipboard(outputId) {
-            const outputText = document.getElementById(outputId).innerText;
-            navigator.clipboard.writeText(outputText).catch(err => {
-                console.error('Could not copy text: ', err);
+        function copyText(elementId) {
+            let text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Copied to clipboard!");
             });
-        }
-
-        function isLetter(ch) {
-            return /[a-zA-Z]/.test(ch);
-        }
-
-        function isUpperCase(ch) {
-            return /[A-Z]/.test(ch);
-        }
-
-        function isLowerCase(ch) {
-            return /[a-z]/.test(ch);
-        }
-
-        function isDigit(ch) {
-            return /[0-9]/.test(ch);
         }
     </script>
 </body>
